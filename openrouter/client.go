@@ -3,7 +3,7 @@ package openrouter
 import (
 	"context"
 	"encoding/json/v2"
-	"log"
+	"fmt"
 	"time"
 
 	t "github.com/Floris22/go-llm/internal/types"
@@ -70,9 +70,12 @@ func (c *client) GenerateText(
 	}
 
 	body := CreateRequestBody(messages, model, temperature, maxTokens, nil, nil, reasoning)
-	respBody, _, err := r.PostReq(
+	respBody, statusCode, err := r.PostReq(
 		ctx, "https://openrouter.ai/api/v1/chat/completions", headers, body, nil,
 	)
+	if statusCode != 200 {
+		return t.OpenRouterResponse{}, fmt.Errorf("OpenRouter API returned status code %d with error: %s", statusCode, string(respBody))
+	}
 	if err != nil {
 		return t.OpenRouterResponse{}, err
 	}
@@ -105,9 +108,12 @@ func (c *client) GenerateTools(
 
 	body := CreateRequestBody(messages, model, temperature, maxTokens, nil, &tools, reasoning)
 
-	respBody, _, err := r.PostReq(
+	respBody, statusCode, err := r.PostReq(
 		ctx, "https://openrouter.ai/api/v1/chat/completions", headers, body, nil,
 	)
+	if statusCode != 200 {
+		return t.OpenRouterResponse{}, fmt.Errorf("OpenRouter API returned status code %d with error: %s", statusCode, string(respBody))
+	}
 	if err != nil {
 		return t.OpenRouterResponse{}, err
 	}
@@ -144,7 +150,7 @@ func (c *client) GenerateStuctured(
 		ctx, "https://openrouter.ai/api/v1/chat/completions", headers, body, nil,
 	)
 	if statusCode != 200 {
-		log.Fatalf("Error sending request | status code: %d | response body: %s", statusCode, string(respBody))
+		return t.OpenRouterResponse{}, fmt.Errorf("OpenRouter API returned status code %d with error: %s", statusCode, string(respBody))
 	}
 	if err != nil {
 		return t.OpenRouterResponse{}, err
