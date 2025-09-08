@@ -1,0 +1,155 @@
+package openrouter
+
+import (
+	"context"
+	"encoding/json/v2"
+	"time"
+
+	t "github.com/Floris22/go-llm/internal/types"
+	r "github.com/Floris22/go-llm/internal/utils/requests"
+)
+
+type OpenRouterClient interface {
+	GenerateText(
+		messages []map[string]string,
+		model string,
+		temperature *float64,
+		maxTokens *int,
+		timeOut *int,
+		reasoning *map[string]any,
+	) (t.OpenRouterResponse, error)
+
+	GenerateTools(
+		messages []map[string]string,
+		tools []map[string]any,
+		model string,
+		temperature *float64,
+		maxTokens *int,
+		timeOut *int,
+		reasoning *map[string]any,
+	) (t.OpenRouterResponse, error)
+
+	GenerateStuctured(
+		messages []map[string]string,
+		schema map[string]any,
+		model string,
+		temperature *float64,
+		maxTokens *int,
+		timeOut *int,
+		reasoning *map[string]any,
+	) (t.OpenRouterResponse, error)
+}
+
+type client struct {
+	apiKey string
+}
+
+func NewClient(apiKey string) OpenRouterClient {
+	return &client{apiKey: apiKey}
+}
+
+func (c *client) GenerateText(
+	messages []map[string]string,
+	model string,
+	temperature *float64,
+	maxTokens *int,
+	timeOut *int,
+	reasoning *map[string]any,
+) (t.OpenRouterResponse, error) {
+	timeoutValue := 15
+	if timeOut != nil {
+		timeoutValue = *timeOut
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeoutValue)*time.Second)
+	defer cancel()
+
+	headers := map[string]string{
+		"Content-Type":  "application/json",
+		"Authorization": "Bearer " + c.apiKey,
+	}
+
+	body := CreateRequestBody(messages, model, temperature, maxTokens, nil, nil, reasoning)
+	respBody, _, err := r.PostReq(
+		ctx, "https://openrouter.ai/api/v1/chat/completions", headers, body, nil,
+	)
+	if err != nil {
+		return t.OpenRouterResponse{}, err
+	}
+
+	var response t.OpenRouterResponse
+	err = json.Unmarshal(respBody, &response)
+	if err != nil {
+		return t.OpenRouterResponse{}, err
+	}
+
+	return response, nil
+}
+
+func (c *client) GenerateTools(
+	messages []map[string]string,
+	tools []map[string]any,
+	model string,
+	temperature *float64,
+	maxTokens *int,
+	timeOut *int,
+	reasoning *map[string]any,
+) (t.OpenRouterResponse, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(15)*time.Second)
+	defer cancel()
+
+	headers := map[string]string{
+		"Content-Type":  "application/json",
+		"Authorization": "Bearer " + c.apiKey,
+	}
+
+	body := CreateRequestBody(messages, model, temperature, maxTokens, nil, &tools, reasoning)
+
+	respBody, _, err := r.PostReq(
+		ctx, "https://openrouter.ai/api/v1/chat/completions", headers, body, nil,
+	)
+	if err != nil {
+		return t.OpenRouterResponse{}, err
+	}
+
+	var response t.OpenRouterResponse
+	err = json.Unmarshal(respBody, &response)
+	if err != nil {
+		return t.OpenRouterResponse{}, err
+	}
+
+	return response, nil
+}
+
+func (c *client) GenerateStuctured(
+	messages []map[string]string,
+	schema map[string]any,
+	model string,
+	temperature *float64,
+	maxTokens *int,
+	timeOut *int,
+	reasoning *map[string]any,
+) (t.OpenRouterResponse, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(15)*time.Second)
+	defer cancel()
+
+	headers := map[string]string{
+		"Content-Type":  "application/json",
+		"Authorization": "Bearer " + c.apiKey,
+	}
+
+	body := CreateRequestBody(messages, model, temperature, maxTokens, &schema, nil, reasoning)
+
+	respBody, _, err := r.PostReq(
+		ctx, "https://openrouter.ai/api/v1/chat/completions", headers, body, nil,
+	)
+	if err != nil {
+		return t.OpenRouterResponse{}, err
+	}
+
+	var response t.OpenRouterResponse
+	err = json.Unmarshal(respBody, &response)
+	if err != nil {
+		return t.OpenRouterResponse{}, err
+	}
+	return response, nil
+}

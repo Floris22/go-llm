@@ -1,0 +1,79 @@
+package main
+
+import (
+	"fmt"
+	"os"
+
+	"github.com/Floris22/go-llm/openrouter"
+)
+
+func main() {
+	client := openrouter.NewClient(os.Getenv("OPENROUTER_API_KEY"))
+	messages := []map[string]string{
+		{"role": "system", "content": "You are a helpful assistant."},
+		{"role": "user", "content": "Who won the world series in 2020?"},
+	}
+	reasoning := map[string]any{
+		// "effort":     "low",
+		"max_tokens": 0,
+	}
+
+	// inputTools := []map[string]any{
+	// 	{
+	// 		"type": "function",
+	// 		"function": map[string]any{
+	// 			"name":        "answer",
+	// 			"description": "Answer the user's question",
+	// 			"parameters": map[string]any{
+	// 				"type": "object",
+	// 				"properties": map[string]any{
+	// 					"answer": map[string]any{"type": "string"},
+	// 				},
+	// 				"required": []string{"answer"},
+	// 			},
+	// 		},
+	// 	},
+	// }
+
+	inputSchema := map[string]any{
+		"type": "json_schema",
+		"json_schema": map[string]any{
+			"name":   "answer",
+			"strict": true,
+			"schema": map[string]any{
+				"type": "object",
+				"properties": map[string]any{
+					"answer": map[string]any{
+						"type":        "string",
+						"description": "The answer to the user's question",
+					},
+				},
+				"required":             []string{"answer"},
+				"additionalProperties": false,
+			},
+		},
+	}
+
+	resp, err := client.GenerateStuctured(messages, inputSchema, "google/gemini-2.5-flash-lite", nil, nil, nil, &reasoning)
+	// resp, err := client.GenerateTools(messages, inputTools, "google/gemini-2.5-flash-lite", nil, nil, nil, &reasoning)
+	// if err != nil {
+	// 	fmt.Printf("An error occured: %v\n", err)
+	// 	os.Exit(1)
+	// }
+
+	// response := resp
+
+	// fmt.Printf("Response: %v\n", (*response.Choices[0].Message.ToolCalls)[0].Function.Arguments)
+	// fmt.Printf("Usage:\n- CompletionTokens: %d\n- PromptTokens: %d\n", response.Usage.CompletionTokens, response.Usage.PromptTokens)
+
+	// resp, err := client.GenerateText(messages, "google/gemini-2.5-flash-lite", nil, nil, nil, &reasoning)
+	if err != nil {
+		fmt.Printf("An error occured: %v\n", err)
+		os.Exit(1)
+	}
+
+	response := resp
+	fmt.Printf("Response text: %s\n", response.Choices[0].Message.Content)
+	fmt.Printf("Usage: %v\n", response.Usage)
+
+}
