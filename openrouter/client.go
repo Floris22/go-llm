@@ -3,6 +3,7 @@ package openrouter
 import (
 	"context"
 	"encoding/json/v2"
+	"log"
 	"time"
 
 	t "github.com/Floris22/go-llm/internal/types"
@@ -11,7 +12,7 @@ import (
 
 type OpenRouterClient interface {
 	GenerateText(
-		messages []map[string]string,
+		messages []map[string]any,
 		model string,
 		temperature *float64,
 		maxTokens *int,
@@ -20,7 +21,7 @@ type OpenRouterClient interface {
 	) (t.OpenRouterResponse, error)
 
 	GenerateTools(
-		messages []map[string]string,
+		messages []map[string]any,
 		tools []map[string]any,
 		model string,
 		temperature *float64,
@@ -30,7 +31,7 @@ type OpenRouterClient interface {
 	) (t.OpenRouterResponse, error)
 
 	GenerateStuctured(
-		messages []map[string]string,
+		messages []map[string]any,
 		schema map[string]any,
 		model string,
 		temperature *float64,
@@ -49,7 +50,7 @@ func NewClient(apiKey string) OpenRouterClient {
 }
 
 func (c *client) GenerateText(
-	messages []map[string]string,
+	messages []map[string]any,
 	model string,
 	temperature *float64,
 	maxTokens *int,
@@ -86,7 +87,7 @@ func (c *client) GenerateText(
 }
 
 func (c *client) GenerateTools(
-	messages []map[string]string,
+	messages []map[string]any,
 	tools []map[string]any,
 	model string,
 	temperature *float64,
@@ -121,7 +122,7 @@ func (c *client) GenerateTools(
 }
 
 func (c *client) GenerateStuctured(
-	messages []map[string]string,
+	messages []map[string]any,
 	schema map[string]any,
 	model string,
 	temperature *float64,
@@ -139,9 +140,12 @@ func (c *client) GenerateStuctured(
 
 	body := CreateRequestBody(messages, model, temperature, maxTokens, &schema, nil, reasoning)
 
-	respBody, _, err := r.PostReq(
+	respBody, statusCode, err := r.PostReq(
 		ctx, "https://openrouter.ai/api/v1/chat/completions", headers, body, nil,
 	)
+	if statusCode != 200 {
+		log.Fatalf("Error sending request | status code: %d | response body: %s", statusCode, string(respBody))
+	}
 	if err != nil {
 		return t.OpenRouterResponse{}, err
 	}

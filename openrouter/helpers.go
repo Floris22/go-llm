@@ -8,7 +8,7 @@ import (
 )
 
 func CreateRequestBody(
-	messages []map[string]string,
+	messages []map[string]any,
 	model string,
 	temperature *float64,
 	maxTokens *int,

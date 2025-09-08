@@ -9,9 +9,17 @@ import (
 
 func main() {
 	client := openrouter.NewClient(os.Getenv("OPENROUTER_API_KEY"))
-	messages := []map[string]string{
+	image_url := ""
+	messages := []map[string]any{
 		{"role": "system", "content": "You are a helpful assistant."},
-		{"role": "user", "content": "Who won the world series in 2020?"},
+		// {"role": "user", "content": "Who won the world series in 2020?"},
+		{
+			"role": "user",
+			"content": []map[string]any{
+				{"type": "text", "text": "Describe the image in detail."},
+				{"type": "image_url", "image_url": map[string]string{"url": image_url}},
+			},
+		},
 	}
 	reasoning := map[string]any{
 		// "effort":     "low",
@@ -54,26 +62,18 @@ func main() {
 		},
 	}
 
-	resp, err := client.GenerateStuctured(messages, inputSchema, "google/gemini-2.5-flash-lite", nil, nil, nil, &reasoning)
+	resp, err := client.GenerateStuctured(messages, inputSchema, "google/gemini-2.5-flash", nil, nil, nil, &reasoning)
 	// resp, err := client.GenerateTools(messages, inputTools, "google/gemini-2.5-flash-lite", nil, nil, nil, &reasoning)
-	// if err != nil {
-	// 	fmt.Printf("An error occured: %v\n", err)
-	// 	os.Exit(1)
-	// }
-
-	// response := resp
-
-	// fmt.Printf("Response: %v\n", (*response.Choices[0].Message.ToolCalls)[0].Function.Arguments)
-	// fmt.Printf("Usage:\n- CompletionTokens: %d\n- PromptTokens: %d\n", response.Usage.CompletionTokens, response.Usage.PromptTokens)
-
 	// resp, err := client.GenerateText(messages, "google/gemini-2.5-flash-lite", nil, nil, nil, &reasoning)
+
 	if err != nil {
 		fmt.Printf("An error occured: %v\n", err)
 		os.Exit(1)
 	}
 
-	response := resp
-	fmt.Printf("Response text: %s\n", response.Choices[0].Message.Content)
-	fmt.Printf("Usage: %v\n", response.Usage)
+	// fmt.Printf("Full response: %v\n", resp)
+	fmt.Printf("Response text: %s\n", resp.Choices[0].Message.Content)
+	// fmt.Printf("Response: %v\n", (*resp.Choices[0].Message.ToolCalls)[0].Function.Arguments)
 
+	fmt.Printf("Usage:\n- CompletionTokens: %d\n- PromptTokens: %d\n", resp.Usage.CompletionTokens, resp.Usage.PromptTokens)
 }

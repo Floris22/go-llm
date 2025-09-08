@@ -2,14 +2,14 @@
 package types
 
 type OpenRouterRequest struct {
-	Model          string              `json:"model"`
-	Messages       []map[string]string `json:"messages"`
-	Temperature    float64             `json:"temperature"`
-	MaxTokens      int                 `json:"max_tokens"`
-	ResponseFormat map[string]any      `json:"response_format,omitempty"`
-	Tools          []map[string]any    `json:"tools,omitempty"`
-	ToolChoice     string              `json:"tool_choice,omitempty"`
-	Reasoning      map[string]any      `json:"reasoning,omitempty"`
+	Model          string           `json:"model"`
+	Messages       []map[string]any `json:"messages"`
+	Temperature    float64          `json:"temperature"`
+	MaxTokens      int              `json:"max_tokens"`
+	ResponseFormat map[string]any   `json:"response_format,omitempty"`
+	Tools          []map[string]any `json:"tools,omitempty"`
+	ToolChoice     string           `json:"tool_choice,omitempty"`
+	Reasoning      map[string]any   `json:"reasoning,omitempty"`
 }
 
 type OpenRouterResponse struct {
