@@ -158,8 +158,5 @@ func (c *client) GenerateStuctured(
 
 	var response t.OpenRouterResponse
 	err = json.Unmarshal(respBody, &response)
-	if err != nil {
-		return t.OpenRouterResponse{}, err
-	}
-	return response, nil
+	return response, err
 }
