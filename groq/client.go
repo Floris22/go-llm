@@ -5,6 +5,7 @@ import (
 	"os"
 	"strings"
 
+	h "github.com/Floris22/go-llm/internal/helpers"
 	t "github.com/Floris22/go-llm/internal/types"
 )
 
@@ -44,7 +45,7 @@ func (c *client) Transcribe(
 	}
 
 	if audioURL != nil {
-		resp, err := TranscribeGroq(model, language, c.apiKey, audioURL, nil, timeOut)
+		resp, err := h.TranscribeGroq(model, language, c.apiKey, audioURL, nil, timeOut)
 		return resp, err
 	} else {
 		// create temp file from bytes
@@ -57,7 +58,7 @@ func (c *client) Transcribe(
 		if err != nil {
 			return t.GroqTranscriptionResponse{}, err
 		}
-		chunkPaths, tempDir, err := SplitAudio(tempFile.Name(), 20*1024*1024)
+		chunkPaths, tempDir, err := h.SplitAudio(tempFile.Name(), 20*1024*1024)
 		if err != nil {
 			return t.GroqTranscriptionResponse{}, err
 		}
@@ -67,7 +68,7 @@ func (c *client) Transcribe(
 		var totalDuration float64
 		for _, chunkPath := range chunkPaths {
 			audioBytes, err := os.ReadFile(chunkPath)
-			resp, err := TranscribeGroq(model, language, c.apiKey, nil, &audioBytes, timeOut)
+			resp, err := h.TranscribeGroq(model, language, c.apiKey, nil, &audioBytes, timeOut)
 			if err != nil {
 				return t.GroqTranscriptionResponse{}, err
 			}

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	h "github.com/Floris22/go-llm/internal/helpers"
 	t "github.com/Floris22/go-llm/internal/types"
 	r "github.com/Floris22/go-llm/internal/utils/requests"
 )
@@ -73,7 +74,7 @@ func (c *client) GenerateText(
 		"Authorization": "Bearer " + c.apiKey,
 	}
 
-	body := CreateRequestBody(messages, model, temperature, maxTokens, nil, nil, reasoning, provider)
+	body := h.CreateRequestBody(messages, model, temperature, maxTokens, nil, nil, reasoning, provider)
 	respBody, statusCode, err := r.PostReq(
 		ctx, "https://openrouter.ai/api/v1/chat/completions", headers, body, nil,
 	)
@@ -111,7 +112,7 @@ func (c *client) GenerateTools(
 		"Authorization": "Bearer " + c.apiKey,
 	}
 
-	body := CreateRequestBody(messages, model, temperature, maxTokens, nil, &tools, reasoning, provider)
+	body := h.CreateRequestBody(messages, model, temperature, maxTokens, nil, &tools, reasoning, provider)
 
 	respBody, statusCode, err := r.PostReq(
 		ctx, "https://openrouter.ai/api/v1/chat/completions", headers, body, nil,
@@ -150,7 +151,7 @@ func (c *client) GenerateStuctured(
 		"Authorization": "Bearer " + c.apiKey,
 	}
 
-	body := CreateRequestBody(messages, model, temperature, maxTokens, &schema, nil, reasoning, provider)
+	body := h.CreateRequestBody(messages, model, temperature, maxTokens, &schema, nil, reasoning, provider)
 
 	respBody, statusCode, err := r.PostReq(
 		ctx, "https://openrouter.ai/api/v1/chat/completions", headers, body, nil,

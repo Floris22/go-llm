@@ -1,4 +1,4 @@
-package openrouter
+package helpers
 
 import (
 	"encoding/json/v2"
