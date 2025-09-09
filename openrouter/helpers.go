@@ -15,6 +15,7 @@ func CreateRequestBody(
 	schema *map[string]any,
 	tools *[]map[string]any,
 	reasoning *map[string]any,
+	provider *map[string]any,
 ) []byte {
 	maxTokensValue := 32000
 	temperatureValue := 0.7
@@ -45,6 +46,9 @@ func CreateRequestBody(
 	}
 	if reasoning != nil {
 		reqBody.Reasoning = *reasoning
+	}
+	if provider != nil {
+		reqBody.Provider = *provider
 	}
 
 	body, err := json.Marshal(reqBody)

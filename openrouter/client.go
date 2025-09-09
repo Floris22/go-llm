@@ -18,6 +18,7 @@ type OpenRouterClient interface {
 		maxTokens *int,
 		timeOut *int,
 		reasoning *map[string]any,
+		provider *map[string]any,
 	) (t.OpenRouterResponse, error)
 
 	GenerateTools(
@@ -28,6 +29,7 @@ type OpenRouterClient interface {
 		maxTokens *int,
 		timeOut *int,
 		reasoning *map[string]any,
+		provider *map[string]any,
 	) (t.OpenRouterResponse, error)
 
 	GenerateStuctured(
@@ -38,6 +40,7 @@ type OpenRouterClient interface {
 		maxTokens *int,
 		timeOut *int,
 		reasoning *map[string]any,
+		provider *map[string]any,
 	) (t.OpenRouterResponse, error)
 }
 
@@ -56,6 +59,7 @@ func (c *client) GenerateText(
 	maxTokens *int,
 	timeOut *int,
 	reasoning *map[string]any,
+	provider *map[string]any,
 ) (t.OpenRouterResponse, error) {
 	timeoutValue := 15
 	if timeOut != nil {
@@ -69,7 +73,7 @@ func (c *client) GenerateText(
 		"Authorization": "Bearer " + c.apiKey,
 	}
 
-	body := CreateRequestBody(messages, model, temperature, maxTokens, nil, nil, reasoning)
+	body := CreateRequestBody(messages, model, temperature, maxTokens, nil, nil, reasoning, provider)
 	respBody, statusCode, err := r.PostReq(
 		ctx, "https://openrouter.ai/api/v1/chat/completions", headers, body, nil,
 	)
@@ -97,6 +101,7 @@ func (c *client) GenerateTools(
 	maxTokens *int,
 	timeOut *int,
 	reasoning *map[string]any,
+	provider *map[string]any,
 ) (t.OpenRouterResponse, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(15)*time.Second)
 	defer cancel()
@@ -106,7 +111,7 @@ func (c *client) GenerateTools(
 		"Authorization": "Bearer " + c.apiKey,
 	}
 
-	body := CreateRequestBody(messages, model, temperature, maxTokens, nil, &tools, reasoning)
+	body := CreateRequestBody(messages, model, temperature, maxTokens, nil, &tools, reasoning, provider)
 
 	respBody, statusCode, err := r.PostReq(
 		ctx, "https://openrouter.ai/api/v1/chat/completions", headers, body, nil,
@@ -135,6 +140,7 @@ func (c *client) GenerateStuctured(
 	maxTokens *int,
 	timeOut *int,
 	reasoning *map[string]any,
+	provider *map[string]any,
 ) (t.OpenRouterResponse, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(15)*time.Second)
 	defer cancel()
@@ -144,7 +150,7 @@ func (c *client) GenerateStuctured(
 		"Authorization": "Bearer " + c.apiKey,
 	}
 
-	body := CreateRequestBody(messages, model, temperature, maxTokens, &schema, nil, reasoning)
+	body := CreateRequestBody(messages, model, temperature, maxTokens, &schema, nil, reasoning, provider)
 
 	respBody, statusCode, err := r.PostReq(
 		ctx, "https://openrouter.ai/api/v1/chat/completions", headers, body, nil,

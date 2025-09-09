@@ -10,6 +10,7 @@ type OpenRouterRequest struct {
 	Tools          []map[string]any `json:"tools,omitempty"`
 	ToolChoice     string           `json:"tool_choice,omitempty"`
 	Reasoning      map[string]any   `json:"reasoning,omitempty"`
+	Provider       map[string]any   `json:"provider,omitempty"`
 }
 
 type OpenRouterResponse struct {
