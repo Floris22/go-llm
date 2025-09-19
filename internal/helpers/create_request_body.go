@@ -4,18 +4,18 @@ import (
 	"encoding/json/v2"
 	"log"
 
-	t "github.com/Floris22/go-llm/internal/types"
+	t "github.com/Floris22/go-llm/llmtypes"
 )
 
 func CreateRequestBody(
-	messages []map[string]any,
+	messages []t.MessageForLLM,
 	model string,
 	temperature *float64,
 	maxTokens *int,
-	schema *map[string]any,
-	tools *[]map[string]any,
-	reasoning *map[string]any,
-	provider *map[string]any,
+	schema *t.StructuredOutputSchema,
+	tools *[]t.ToolSchema,
+	reasoning *t.ReasoningConfig,
+	provider *t.ProviderConfig,
 ) []byte {
 	maxTokensValue := 32000
 	temperatureValue := 0.7
@@ -23,6 +23,7 @@ func CreateRequestBody(
 	if maxTokens != nil {
 		maxTokensValue = *maxTokens
 	}
+
 	if temperature != nil {
 		temperatureValue = *temperature
 	}
@@ -30,25 +31,57 @@ func CreateRequestBody(
 	reqBody := t.OpenRouterRequest{
 		Model:       model,
 		Messages:    messages,
-		Temperature: temperatureValue,
-		MaxTokens:   maxTokensValue,
+		Temperature: &temperatureValue,
+		MaxTokens:   &maxTokensValue,
 	}
 
 	if schema != nil && tools != nil {
 		log.Fatalf("Cannot do structured response and tool call repsponse at the same time")
 	}
+
 	if schema != nil {
-		reqBody.ResponseFormat = *schema
+		fullSchema := map[string]any{
+			"type": "json_schema",
+			"json_schema": map[string]any{
+				"name":   schema.Name,
+				"strict": schema.Strict,
+				"schema": map[string]any{
+					"type":                 schema.Schema.Type,
+					"properties":           schema.Schema.Properties,
+					"required":             schema.Schema.Required,
+					"additionalProperties": schema.Schema.AdditionalProperties,
+				},
+			},
+		}
+		reqBody.ResponseFormat = &fullSchema
 	}
+
 	if tools != nil {
-		reqBody.Tools = *tools
-		reqBody.ToolChoice = "required"
+		var toolsFull []map[string]any
+		for _, tool := range *tools {
+			toolDef := map[string]any{
+				"type": "function",
+				"function": map[string]any{
+					"name":        tool.Name,
+					"description": tool.Description,
+					"parameters":  tool.Parameters,
+				},
+			}
+			toolsFull = append(toolsFull, toolDef)
+		}
+
+		reqBody.Tools = &toolsFull
+
+		tc := t.ToolChoiceRequired
+		reqBody.ToolChoice = &tc
 	}
+
 	if reasoning != nil {
-		reqBody.Reasoning = *reasoning
+		reqBody.Reasoning = reasoning
 	}
+
 	if provider != nil {
-		reqBody.Provider = *provider
+		reqBody.Provider = provider
 	}
 
 	body, err := json.Marshal(reqBody)

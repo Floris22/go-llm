@@ -1,4 +1,4 @@
-package openrouter
+package clients
 
 import (
 	"context"
@@ -7,60 +7,59 @@ import (
 	"time"
 
 	h "github.com/Floris22/go-llm/internal/helpers"
-	t "github.com/Floris22/go-llm/internal/types"
-	r "github.com/Floris22/go-llm/internal/utils/requests"
+	t "github.com/Floris22/go-llm/llmtypes"
 )
 
 type OpenRouterClient interface {
 	GenerateText(
-		messages []map[string]any,
+		messages []t.MessageForLLM,
 		model string,
 		temperature *float64,
 		maxTokens *int,
 		timeOut *int,
-		reasoning *map[string]any,
-		provider *map[string]any,
+		reasoning *t.ReasoningConfig,
+		provider *t.ProviderConfig,
 	) (t.OpenRouterResponse, error)
 
 	GenerateTools(
-		messages []map[string]any,
-		tools []map[string]any,
+		messages []t.MessageForLLM,
+		tools []t.ToolSchema,
 		model string,
 		temperature *float64,
 		maxTokens *int,
 		timeOut *int,
-		reasoning *map[string]any,
-		provider *map[string]any,
+		reasoning *t.ReasoningConfig,
+		provider *t.ProviderConfig,
 	) (t.OpenRouterResponse, error)
 
-	GenerateStuctured(
-		messages []map[string]any,
-		schema map[string]any,
+	GenerateStructured(
+		messages []t.MessageForLLM,
+		schema t.StructuredOutputSchema,
 		model string,
 		temperature *float64,
 		maxTokens *int,
 		timeOut *int,
-		reasoning *map[string]any,
-		provider *map[string]any,
+		reasoning *t.ReasoningConfig,
+		provider *t.ProviderConfig,
 	) (t.OpenRouterResponse, error)
 }
 
-type client struct {
+type openRouterClient struct {
 	apiKey string
 }
 
-func NewClient(apiKey string) OpenRouterClient {
-	return &client{apiKey: apiKey}
+func NewOpenRouterClient(apiKey string) OpenRouterClient {
+	return &openRouterClient{apiKey: apiKey}
 }
 
-func (c *client) GenerateText(
-	messages []map[string]any,
+func (c *openRouterClient) GenerateText(
+	messages []t.MessageForLLM,
 	model string,
 	temperature *float64,
 	maxTokens *int,
 	timeOut *int,
-	reasoning *map[string]any,
-	provider *map[string]any,
+	reasoning *t.ReasoningConfig,
+	provider *t.ProviderConfig,
 ) (t.OpenRouterResponse, error) {
 	timeoutValue := 15
 	if timeOut != nil {
@@ -75,7 +74,7 @@ func (c *client) GenerateText(
 	}
 
 	body := h.CreateRequestBody(messages, model, temperature, maxTokens, nil, nil, reasoning, provider)
-	respBody, statusCode, err := r.PostReq(
+	respBody, statusCode, err := h.PostReq(
 		ctx, "https://openrouter.ai/api/v1/chat/completions", headers, body, nil,
 	)
 	if statusCode != 200 {
@@ -94,15 +93,15 @@ func (c *client) GenerateText(
 	return response, nil
 }
 
-func (c *client) GenerateTools(
-	messages []map[string]any,
-	tools []map[string]any,
+func (c *openRouterClient) GenerateTools(
+	messages []t.MessageForLLM,
+	tools []t.ToolSchema,
 	model string,
 	temperature *float64,
 	maxTokens *int,
 	timeOut *int,
-	reasoning *map[string]any,
-	provider *map[string]any,
+	reasoning *t.ReasoningConfig,
+	provider *t.ProviderConfig,
 ) (t.OpenRouterResponse, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(15)*time.Second)
 	defer cancel()
@@ -114,7 +113,7 @@ func (c *client) GenerateTools(
 
 	body := h.CreateRequestBody(messages, model, temperature, maxTokens, nil, &tools, reasoning, provider)
 
-	respBody, statusCode, err := r.PostReq(
+	respBody, statusCode, err := h.PostReq(
 		ctx, "https://openrouter.ai/api/v1/chat/completions", headers, body, nil,
 	)
 	if statusCode != 200 {
@@ -133,15 +132,15 @@ func (c *client) GenerateTools(
 	return response, nil
 }
 
-func (c *client) GenerateStuctured(
-	messages []map[string]any,
-	schema map[string]any,
+func (c *openRouterClient) GenerateStructured(
+	messages []t.MessageForLLM,
+	schema t.StructuredOutputSchema,
 	model string,
 	temperature *float64,
 	maxTokens *int,
 	timeOut *int,
-	reasoning *map[string]any,
-	provider *map[string]any,
+	reasoning *t.ReasoningConfig,
+	provider *t.ProviderConfig,
 ) (t.OpenRouterResponse, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(15)*time.Second)
 	defer cancel()
@@ -153,7 +152,7 @@ func (c *client) GenerateStuctured(
 
 	body := h.CreateRequestBody(messages, model, temperature, maxTokens, &schema, nil, reasoning, provider)
 
-	respBody, statusCode, err := r.PostReq(
+	respBody, statusCode, err := h.PostReq(
 		ctx, "https://openrouter.ai/api/v1/chat/completions", headers, body, nil,
 	)
 	if statusCode != 200 {

@@ -1,4 +1,4 @@
-package groq
+package clients
 
 import (
 	"errors"
@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	h "github.com/Floris22/go-llm/internal/helpers"
-	t "github.com/Floris22/go-llm/internal/types"
+	t "github.com/Floris22/go-llm/llmtypes"
 )
 
 type GroqClient interface {
@@ -19,17 +19,17 @@ type GroqClient interface {
 	) (t.GroqTranscriptionResponse, error)
 }
 
-type client struct {
+type groqClient struct {
 	apiKey string
 }
 
-func NewClient(apiKey string) GroqClient {
-	return &client{
+func NewGroqClient(apiKey string) GroqClient {
+	return &groqClient{
 		apiKey: apiKey,
 	}
 }
 
-func (c *client) Transcribe(
+func (c *groqClient) Transcribe(
 	model string,
 	language string,
 	audioURL *string,

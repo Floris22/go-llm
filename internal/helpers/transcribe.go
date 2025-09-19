@@ -9,8 +9,7 @@ import (
 	"mime/multipart"
 	"time"
 
-	t "github.com/Floris22/go-llm/internal/types"
-	r "github.com/Floris22/go-llm/internal/utils/requests"
+	t "github.com/Floris22/go-llm/llmtypes"
 )
 
 func TranscribeGroq(
@@ -53,7 +52,7 @@ func TranscribeGroq(
 		"Authorization": "Bearer " + apiKey,
 	}
 
-	respBody, statusCode, err := r.PostReq(
+	respBody, statusCode, err := PostReq(
 		ctx, "https://api.groq.com/openai/v1/audio/transcriptions", headers, buf.Bytes(), nil,
 	)
 	if statusCode != 200 {
