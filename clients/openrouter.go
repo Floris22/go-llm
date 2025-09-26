@@ -13,6 +13,7 @@ import (
 type OpenRouterClient interface {
 	GenerateText(
 		messages []t.MessageForLLM,
+		messageParts []t.PartMessageForLLM,
 		model string,
 		temperature *float64,
 		maxTokens *int,
@@ -23,6 +24,7 @@ type OpenRouterClient interface {
 
 	GenerateTools(
 		messages []t.MessageForLLM,
+		messageParts []t.PartMessageForLLM,
 		tools []t.ToolSchema,
 		model string,
 		temperature *float64,
@@ -34,6 +36,7 @@ type OpenRouterClient interface {
 
 	GenerateStructured(
 		messages []t.MessageForLLM,
+		messageParts []t.PartMessageForLLM,
 		schema t.StructuredOutputSchema,
 		model string,
 		temperature *float64,
@@ -54,6 +57,7 @@ func NewOpenRouterClient(apiKey string) OpenRouterClient {
 
 func (c *openRouterClient) GenerateText(
 	messages []t.MessageForLLM,
+	messageParts []t.PartMessageForLLM,
 	model string,
 	temperature *float64,
 	maxTokens *int,
@@ -73,7 +77,11 @@ func (c *openRouterClient) GenerateText(
 		"Authorization": "Bearer " + c.apiKey,
 	}
 
-	body := h.CreateRequestBody(messages, model, temperature, maxTokens, nil, nil, reasoning, provider)
+	body, err := h.CreateRequestBody(messages, messageParts, model, temperature, maxTokens, nil, nil, reasoning, provider)
+	if err != nil {
+		return t.OpenRouterResponse{}, err
+	}
+
 	respBody, statusCode, err := h.PostReq(
 		ctx, "https://openrouter.ai/api/v1/chat/completions", headers, body, nil,
 	)
@@ -95,6 +103,7 @@ func (c *openRouterClient) GenerateText(
 
 func (c *openRouterClient) GenerateTools(
 	messages []t.MessageForLLM,
+	messageParts []t.PartMessageForLLM,
 	tools []t.ToolSchema,
 	model string,
 	temperature *float64,
@@ -111,7 +120,10 @@ func (c *openRouterClient) GenerateTools(
 		"Authorization": "Bearer " + c.apiKey,
 	}
 
-	body := h.CreateRequestBody(messages, model, temperature, maxTokens, nil, &tools, reasoning, provider)
+	body, err := h.CreateRequestBody(messages, messageParts, model, temperature, maxTokens, nil, &tools, reasoning, provider)
+	if err != nil {
+		return t.OpenRouterResponse{}, err
+	}
 
 	respBody, statusCode, err := h.PostReq(
 		ctx, "https://openrouter.ai/api/v1/chat/completions", headers, body, nil,
@@ -134,6 +146,7 @@ func (c *openRouterClient) GenerateTools(
 
 func (c *openRouterClient) GenerateStructured(
 	messages []t.MessageForLLM,
+	messageParts []t.PartMessageForLLM,
 	schema t.StructuredOutputSchema,
 	model string,
 	temperature *float64,
@@ -150,7 +163,10 @@ func (c *openRouterClient) GenerateStructured(
 		"Authorization": "Bearer " + c.apiKey,
 	}
 
-	body := h.CreateRequestBody(messages, model, temperature, maxTokens, &schema, nil, reasoning, provider)
+	body, err := h.CreateRequestBody(messages, messageParts, model, temperature, maxTokens, &schema, nil, reasoning, provider)
+	if err != nil {
+		return t.OpenRouterResponse{}, err
+	}
 
 	respBody, statusCode, err := h.PostReq(
 		ctx, "https://openrouter.ai/api/v1/chat/completions", headers, body, nil,

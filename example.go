@@ -58,6 +58,7 @@ func main() {
 
 	resp, err := client.GenerateTools(
 		messages,
+		nil,
 		[]llmtypes.ToolSchema{provideWeatherDetailsSchema},
 		"google/gemini-2.5-flash-lite",
 		ptf(0.1),

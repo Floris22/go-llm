@@ -12,6 +12,18 @@ type OpenRouterRequest struct {
 	Provider       *ProviderConfig   `json:"provider,omitempty"`
 }
 
+type OpenRouterRequestWithParts struct {
+	Model          string              `json:"model"`
+	Messages       []PartMessageForLLM `json:"messages"`
+	Temperature    *float64            `json:"temperature,omitempty"`
+	MaxTokens      *int                `json:"max_tokens,omitempty"`
+	ResponseFormat *map[string]any     `json:"response_format,omitempty"`
+	Tools          *[]map[string]any   `json:"tools,omitempty"`
+	ToolChoice     *ToolChoiceEnum     `json:"tool_choice,omitempty"`
+	Reasoning      *ReasoningConfig    `json:"reasoning,omitempty"`
+	Provider       *ProviderConfig     `json:"provider,omitempty"`
+}
+
 type OpenRouterResponse struct {
 	Provider string `json:"provider"`
 	Model    string `json:"model"`
