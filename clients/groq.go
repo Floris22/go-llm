@@ -5,8 +5,8 @@ import (
 	"os"
 	"strings"
 
-	h "github.com/Floris22/go-llm/internal/helpers"
-	t "github.com/Floris22/go-llm/llmtypes"
+	h "github.com/Floris22/go-llm/v2/internal/helpers"
+	t "github.com/Floris22/go-llm/v2/llmtypes"
 )
 
 type GroqClient interface {

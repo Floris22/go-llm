@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/Floris22/go-llm/clients"
-	"github.com/Floris22/go-llm/llmtypes"
+	"github.com/Floris22/go-llm/v2/clients"
+	"github.com/Floris22/go-llm/v2/llmtypes"
 )
 
 // Helper functions to create pointers to primitive types

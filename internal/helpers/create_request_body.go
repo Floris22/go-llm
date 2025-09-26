@@ -4,7 +4,7 @@ import (
 	"encoding/json/v2"
 	"log"
 
-	t "github.com/Floris22/go-llm/llmtypes"
+	t "github.com/Floris22/go-llm/v2/llmtypes"
 )
 
 func CreateRequestBody(

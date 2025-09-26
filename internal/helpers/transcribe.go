@@ -9,7 +9,7 @@ import (
 	"mime/multipart"
 	"time"
 
-	t "github.com/Floris22/go-llm/llmtypes"
+	t "github.com/Floris22/go-llm/v2/llmtypes"
 )
 
 func TranscribeGroq(
