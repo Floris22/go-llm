@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json/v2"
 	"fmt"
 	"os"
 
@@ -60,7 +61,7 @@ func main() {
 		messages,
 		nil,
 		[]llmtypes.ToolSchema{provideWeatherDetailsSchema},
-		"google/gemini-2.5-flash-lite",
+		"google/gemini-2.5-flash-lite-preview-09-2025",
 		ptf(0.1),
 		pti(100),
 		pti(3),
@@ -73,7 +74,16 @@ func main() {
 		panic(err)
 	}
 
-	fmt.Println(resp.Choices[0].Message.ToolCalls)
+	tc := resp.Choices[0].Message.ToolCalls[0]
+	fmt.Printf("id: %s\ntype: %s\nname: %s\nargs: %s\n", tc.ID, tc.Type, tc.Function.Name, tc.Function.Arguments)
+
+	var toolArgsLoaded map[string]any
+	err = json.Unmarshal([]byte(tc.Function.Arguments), &toolArgsLoaded)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("toolArgs: %s\n", toolArgsLoaded)
+	fmt.Printf("toolArgs.city: %s\n", toolArgsLoaded["city"])
 }
 
 // ------------------------------

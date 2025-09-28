@@ -1,15 +1,15 @@
 package llmtypes
 
 type OpenRouterRequest struct {
-	Model          string            `json:"model"`
-	Messages       []MessageForLLM   `json:"messages"`
-	Temperature    *float64          `json:"temperature,omitempty"`
-	MaxTokens      *int              `json:"max_tokens,omitempty"`
-	ResponseFormat *map[string]any   `json:"response_format,omitempty"`
-	Tools          *[]map[string]any `json:"tools,omitempty"`
-	ToolChoice     *ToolChoiceEnum   `json:"tool_choice,omitempty"`
-	Reasoning      *ReasoningConfig  `json:"reasoning,omitempty"`
-	Provider       *ProviderConfig   `json:"provider,omitempty"`
+	Model          string           `json:"model"`
+	Messages       []MessageForLLM  `json:"messages"`
+	Temperature    *float64         `json:"temperature,omitempty"`
+	MaxTokens      *int             `json:"max_tokens,omitempty"`
+	ResponseFormat *map[string]any  `json:"response_format,omitempty"`
+	Tools          []map[string]any `json:"tools,omitempty"`
+	ToolChoice     *ToolChoiceEnum  `json:"tool_choice,omitempty"`
+	Reasoning      *ReasoningConfig `json:"reasoning,omitempty"`
+	Provider       *ProviderConfig  `json:"provider,omitempty"`
 }
 
 type OpenRouterRequestWithParts struct {
@@ -18,7 +18,7 @@ type OpenRouterRequestWithParts struct {
 	Temperature    *float64            `json:"temperature,omitempty"`
 	MaxTokens      *int                `json:"max_tokens,omitempty"`
 	ResponseFormat *map[string]any     `json:"response_format,omitempty"`
-	Tools          *[]map[string]any   `json:"tools,omitempty"`
+	Tools          []map[string]any    `json:"tools,omitempty"`
 	ToolChoice     *ToolChoiceEnum     `json:"tool_choice,omitempty"`
 	Reasoning      *ReasoningConfig    `json:"reasoning,omitempty"`
 	Provider       *ProviderConfig     `json:"provider,omitempty"`
@@ -31,18 +31,11 @@ type OpenRouterResponse struct {
 	Choices  []struct {
 		FinishReason string `json:"finish_reason"`
 		Message      struct {
-			Role      RoleEnum `json:"role"`
-			Content   string   `json:"content"`
-			Refusal   *string  `json:"refusal"`
-			Reasoning *string  `json:"reasoning"`
-			ToolCalls *[]struct {
-				ID       string `json:"id"`
-				Type     string `json:"type"`
-				Function struct {
-					Name      string `json:"name"`
-					Arguments string `json:"arguments"`
-				} `json:"function"`
-			} `json:"tool_calls,omitempty"`
+			Role      RoleEnum                 `json:"role"`
+			Content   string                   `json:"content"`
+			Refusal   *string                  `json:"refusal"`
+			Reasoning *string                  `json:"reasoning"`
+			ToolCalls []MessageForLLMToolCalls `json:"tool_calls,omitempty"`
 		} `json:"message"`
 	} `json:"choices"`
 	Usage struct {
