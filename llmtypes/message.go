@@ -3,8 +3,21 @@ package llmtypes
 // MessageForLLM defines a typical message sent to an LLM.
 // Check RoleEnum for the available roles.
 type MessageForLLM struct {
-	Role    RoleEnum `json:"role"`
-	Content string   `json:"content"`
+	Role       RoleEnum                 `json:"role"`
+	Content    string                   `json:"content"`
+	ToolCalls  []MessageForLLMToolCalls `json:"tool_calls,omitempty"`
+	ToolCallID *string                  `json:"tool_call_id,omitempty"`
+}
+
+type MessageForLLMToolCalls struct {
+	ID       string                         `json:"id"`
+	Type     string                         `json:"type"`
+	Function MessageForLLMToolCallsFunction `json:"function"`
+}
+
+type MessageForLLMToolCallsFunction struct {
+	Name      string `json:"name"`
+	Arguments string `json:"arguments"`
 }
 
 // Used when you want to send multi input content.
