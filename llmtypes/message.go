@@ -4,7 +4,7 @@ package llmtypes
 // Check RoleEnum for the available roles.
 type MessageForLLM struct {
 	Role       RoleEnum                 `json:"role"`
-	Content    string                   `json:"content"`
+	Content    *string                  `json:"content,omitempty"`
 	ToolCalls  []MessageForLLMToolCalls `json:"tool_calls,omitempty"`
 	ToolCallID *string                  `json:"tool_call_id,omitempty"`
 }

@@ -47,13 +47,13 @@ func main() {
 
 	systemMessage := llmtypes.MessageForLLM{
 		Role:    llmtypes.RoleSystem,
-		Content: "You are a helpful assistant.",
+		Content: pts("You are a helpful assistant."),
 	}
 	messages = append(messages, systemMessage)
 
 	userMessage := llmtypes.MessageForLLM{
 		Role:    llmtypes.RoleUser,
-		Content: "What is the weather like today in Belgium?",
+		Content: pts("What is the weather like today in Belgium?"),
 	}
 	messages = append(messages, userMessage)
 
