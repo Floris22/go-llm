@@ -3,6 +3,7 @@ package llmtypes
 type ParameterProperty struct {
 	Type        string `json:"type"`
 	Description string `json:"description"`
+	Enum        []any  `json:"enum,omitempty"`
 	Items       *struct {
 		Type string `json:"type"`
 	} `json:"items,omitempty"`
