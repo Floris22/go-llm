@@ -41,7 +41,11 @@ var provideWeatherDetailsSchema = llmtypes.ToolSchema{
 }
 
 func main() {
-	client := clients.NewOpenRouterClient(os.Getenv("OPENROUTER_API_KEY"))
+	client := clients.NewOpenRouterClient(
+		os.Getenv("OPENROUTER_API_KEY"),
+		true,
+		"", // default openai gpt oss 120b
+	)
 
 	var messages []llmtypes.MessageForLLM
 
@@ -65,9 +69,10 @@ func main() {
 		ptf(0.1),
 		pti(100),
 		pti(3),
-		&llmtypes.ReasoningConfig{
-			MaxTokens: pti(0),
-		},
+		// &llmtypes.ReasoningConfig{
+		// 	MaxTokens: pti(0),
+		// },
+		nil,
 		nil,
 	)
 	if err != nil {
@@ -82,6 +87,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	fmt.Printf("modelName: %s by %s\n", resp.Model, resp.Provider)
 	fmt.Printf("toolArgs: %s\n", toolArgsLoaded)
 	fmt.Printf("toolArgs.city: %s\n", toolArgsLoaded["city"])
 }

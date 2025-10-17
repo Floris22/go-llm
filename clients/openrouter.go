@@ -48,11 +48,16 @@ type OpenRouterClient interface {
 }
 
 type openRouterClient struct {
-	apiKey string
+	apiKey      string
+	retryModel  string
+	enableRetry bool
 }
 
-func NewOpenRouterClient(apiKey string) OpenRouterClient {
-	return &openRouterClient{apiKey: apiKey}
+func NewOpenRouterClient(apiKey string, enableRetry bool, retryModel string) OpenRouterClient {
+	if enableRetry && retryModel == "" {
+		retryModel = "openai/gpt-oss-120b:nitro"
+	}
+	return &openRouterClient{apiKey: apiKey, retryModel: retryModel, enableRetry: enableRetry}
 }
 
 func (c *openRouterClient) GenerateText(
@@ -85,11 +90,23 @@ func (c *openRouterClient) GenerateText(
 	respBody, statusCode, err := h.PostReq(
 		ctx, "https://openrouter.ai/api/v1/chat/completions", headers, body, nil,
 	)
-	if statusCode != 200 {
-		return t.OpenRouterResponse{}, fmt.Errorf("OpenRouter API returned status code %d with error: %s", statusCode, string(respBody))
-	}
 	if err != nil {
 		return t.OpenRouterResponse{}, err
+	}
+	if statusCode != 200 {
+		// 408 == request timed out, 429 == rate limited, 502 model down or invalid response
+		if (statusCode == 408 || statusCode == 429 || statusCode == 502) && c.enableRetry {
+			body, err := h.CreateRequestBody(messages, messageParts, c.retryModel, temperature, maxTokens, nil, nil, nil, nil)
+			if err != nil {
+				return t.OpenRouterResponse{}, err
+			}
+			respBody, err = h.DoReqWithRetries(ctx, headers, body)
+			if err != nil {
+				return t.OpenRouterResponse{}, fmt.Errorf("OpenRouter API failed retry after 3 attempts: %s", string(respBody))
+			}
+		} else {
+			return t.OpenRouterResponse{}, fmt.Errorf("OpenRouter API returned status code %d with error: %s", statusCode, string(respBody))
+		}
 	}
 
 	var response t.OpenRouterResponse
@@ -128,11 +145,19 @@ func (c *openRouterClient) GenerateTools(
 	respBody, statusCode, err := h.PostReq(
 		ctx, "https://openrouter.ai/api/v1/chat/completions", headers, body, nil,
 	)
-	if statusCode != 200 {
-		return t.OpenRouterResponse{}, fmt.Errorf("OpenRouter API returned status code %d with error: %s", statusCode, string(respBody))
-	}
 	if err != nil {
 		return t.OpenRouterResponse{}, err
+	}
+	if statusCode != 200 {
+		if (statusCode == 408 || statusCode == 429 || statusCode == 502) && c.enableRetry {
+			body, err := h.CreateRequestBody(messages, messageParts, c.retryModel, temperature, maxTokens, nil, &tools, nil, nil)
+			respBody, err = h.DoReqWithRetries(ctx, headers, body)
+			if err != nil {
+				return t.OpenRouterResponse{}, fmt.Errorf("OpenRouter API failed retry after 3 attempts: %s", string(respBody))
+			}
+		} else {
+			return t.OpenRouterResponse{}, fmt.Errorf("OpenRouter API returned status code %d with error: %s", statusCode, string(respBody))
+		}
 	}
 
 	var response t.OpenRouterResponse
@@ -171,11 +196,19 @@ func (c *openRouterClient) GenerateStructured(
 	respBody, statusCode, err := h.PostReq(
 		ctx, "https://openrouter.ai/api/v1/chat/completions", headers, body, nil,
 	)
-	if statusCode != 200 {
-		return t.OpenRouterResponse{}, fmt.Errorf("OpenRouter API returned status code %d with error: %s", statusCode, string(respBody))
-	}
 	if err != nil {
 		return t.OpenRouterResponse{}, err
+	}
+	if statusCode != 200 {
+		if (statusCode == 408 || statusCode == 429 || statusCode == 502) && c.enableRetry {
+			body, err := h.CreateRequestBody(messages, messageParts, c.retryModel, temperature, maxTokens, &schema, nil, nil, nil)
+			respBody, err = h.DoReqWithRetries(ctx, headers, body)
+			if err != nil {
+				return t.OpenRouterResponse{}, fmt.Errorf("OpenRouter API failed retry after 3 attempts: %s", string(respBody))
+			}
+		} else {
+			return t.OpenRouterResponse{}, fmt.Errorf("OpenRouter API returned status code %d with error: %s", statusCode, string(respBody))
+		}
 	}
 
 	var response t.OpenRouterResponse

@@ -56,7 +56,14 @@ func TranscribeGroq(
 		ctx, "https://api.groq.com/openai/v1/audio/transcriptions", headers, buf.Bytes(), nil,
 	)
 	if statusCode != 200 {
-		return t.GroqTranscriptionResponse{}, fmt.Errorf("Groq API returned status code %d with error: %s", statusCode, string(respBody))
+		if statusCode == 429 || statusCode >= 500 {
+			respBody, err = DoGroqWithRetries(ctx, headers, buf.Bytes())
+			if err != nil {
+				return t.GroqTranscriptionResponse{}, fmt.Errorf("Groq API failed retry after 5 attempts: %s", string(respBody))
+			}
+		} else {
+			return t.GroqTranscriptionResponse{}, fmt.Errorf("Groq API returned status code %d with error: %s", statusCode, string(respBody))
+		}
 	}
 	if err != nil {
 		return t.GroqTranscriptionResponse{}, err
