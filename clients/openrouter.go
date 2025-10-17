@@ -48,16 +48,32 @@ type OpenRouterClient interface {
 }
 
 type openRouterClient struct {
-	apiKey      string
-	retryModel  string
-	enableRetry bool
+	apiKey                    string
+	retryModel                string
+	retryModelReasoningConfig *t.ReasoningConfig
+	enableRetry               bool
 }
 
-func NewOpenRouterClient(apiKey string, enableRetry bool, retryModel string) OpenRouterClient {
+// Creates a new open router OpenRouterClient.
+// If retry is enabled and the model name is "" we
+// set openai/gpt-oss-120b:nitro as default and reasoningConfig to nil.
+// Otherwise, it is your responsibility to provide a valid model name and reasoningConfig for that model.
+func NewOpenRouterClient(
+	apiKey string,
+	enableRetry bool,
+	retryModel string,
+	retryModelReasoningConfig *t.ReasoningConfig,
+) OpenRouterClient {
 	if enableRetry && retryModel == "" {
 		retryModel = "openai/gpt-oss-120b:nitro"
+		retryModelReasoningConfig = nil
 	}
-	return &openRouterClient{apiKey: apiKey, retryModel: retryModel, enableRetry: enableRetry}
+	return &openRouterClient{
+		apiKey:                    apiKey,
+		retryModel:                retryModel,
+		enableRetry:               enableRetry,
+		retryModelReasoningConfig: retryModelReasoningConfig,
+	}
 }
 
 func (c *openRouterClient) GenerateText(
@@ -96,7 +112,7 @@ func (c *openRouterClient) GenerateText(
 	if statusCode != 200 {
 		// 408 == request timed out, 429 == rate limited, 502 model down or invalid response
 		if (statusCode == 408 || statusCode == 429 || statusCode == 502) && c.enableRetry {
-			body, err := h.CreateRequestBody(messages, messageParts, c.retryModel, temperature, maxTokens, nil, nil, nil, nil)
+			body, err := h.CreateRequestBody(messages, messageParts, c.retryModel, temperature, maxTokens, nil, nil, c.retryModelReasoningConfig, nil)
 			if err != nil {
 				return t.OpenRouterResponse{}, err
 			}
@@ -150,7 +166,7 @@ func (c *openRouterClient) GenerateTools(
 	}
 	if statusCode != 200 {
 		if (statusCode == 408 || statusCode == 429 || statusCode == 502) && c.enableRetry {
-			body, err := h.CreateRequestBody(messages, messageParts, c.retryModel, temperature, maxTokens, nil, &tools, nil, nil)
+			body, err := h.CreateRequestBody(messages, messageParts, c.retryModel, temperature, maxTokens, nil, &tools, c.retryModelReasoningConfig, nil)
 			respBody, err = h.DoReqWithRetries(ctx, headers, body)
 			if err != nil {
 				return t.OpenRouterResponse{}, fmt.Errorf("OpenRouter API failed retry after 3 attempts: %s", string(respBody))
@@ -201,7 +217,7 @@ func (c *openRouterClient) GenerateStructured(
 	}
 	if statusCode != 200 {
 		if (statusCode == 408 || statusCode == 429 || statusCode == 502) && c.enableRetry {
-			body, err := h.CreateRequestBody(messages, messageParts, c.retryModel, temperature, maxTokens, &schema, nil, nil, nil)
+			body, err := h.CreateRequestBody(messages, messageParts, c.retryModel, temperature, maxTokens, &schema, nil, c.retryModelReasoningConfig, nil)
 			respBody, err = h.DoReqWithRetries(ctx, headers, body)
 			if err != nil {
 				return t.OpenRouterResponse{}, fmt.Errorf("OpenRouter API failed retry after 3 attempts: %s", string(respBody))
